@@ -1,45 +1,45 @@
 // BlkChain.cpp                                            (c) DIR, 2019
 //
-//              Реализация классов модели блокчейн
+//              ГђГҐГ Г«ГЁГ§Г Г¶ГЁГї ГЄГ«Г Г±Г±Г®Гў Г¬Г®Г¤ГҐГ«ГЁ ГЎГ«Г®ГЄГ·ГҐГ©Г­
 //
-// CBlockChain - Модель блокчейн
+// CBlockChain - ГЊГ®Г¤ГҐГ«Гј ГЎГ«Г®ГЄГ·ГҐГ©Г­
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-//#include "pch.h"
+//#include "stdafx.h"
+#include "pch.h"
 #include "PeerNetDlg.h" //#include "PeerNetNode.h" //#include "BlkChain.h"
 
 #ifdef _DEBUG
  #define new DEBUG_NEW
 #endif
 
-//      Реализация класса CBlockChain
+//      ГђГҐГ Г«ГЁГ§Г Г¶ГЁГї ГЄГ«Г Г±Г±Г  CBlockChain
 ////////////////////////////////////////////////////////////////////////
-//      Инициализация статических элементов данных
+//      Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї Г±ГІГ ГІГЁГ·ГҐГ±ГЄГЁГµ ГЅГ«ГҐГ¬ГҐГ­ГІГ®Гў Г¤Г Г­Г­Г»Гµ
 //
 
-// Конструктор и деструктор
+// ГЉГ®Г­Г±ГІГ°ГіГЄГІГ®Г° ГЁ Г¤ГҐГ±ГІГ°ГіГЄГІГ®Г°
 CBlockChain::CBlockChain(CPeerNetDialog *pMainWin, CPeerNetNode *paNode)
            : m_aCrypt(KEYCONTNAME),
              m_rUsers(&m_aCrypt),
              m_rBalances(&m_aCrypt),
              m_rTransacts(&m_aCrypt, &m_rUsers)
 {
-  m_pMainWin = pMainWin;    //главное окно программы
-  m_paNode = paNode;        //узел одноранговой сети
-  CancelAuthorization();    //очистить данные авторизации
-  //m_bTrans = false;         //флаг "Проводится собственная транзакция"
+  m_pMainWin = pMainWin;    //ГЈГ«Г ГўГ­Г®ГҐ Г®ГЄГ­Г® ГЇГ°Г®ГЈГ°Г Г¬Г¬Г»
+  m_paNode = paNode;        //ГіГ§ГҐГ« Г®Г¤Г­Г®Г°Г Г­ГЈГ®ГўГ®Г© Г±ГҐГІГЁ
+  CancelAuthorization();    //Г®Г·ГЁГ±ГІГЁГІГј Г¤Г Г­Г­Г»ГҐ Г ГўГІГ®Г°ГЁГ§Г Г¶ГЁГЁ
+  //m_bTrans = false;         //ГґГ«Г ГЈ "ГЏГ°Г®ГўГ®Г¤ГЁГІГ±Гї Г±Г®ГЎГ±ГІГўГҐГ­Г­Г Гї ГІГ°Г Г­Г§Г ГЄГ¶ГЁГї"
 }
 CBlockChain::~CBlockChain(void)
 {
 } // CBlockChain::~CBlockChain()
 
 //public:
-// Внешние методы
+// Г‚Г­ГҐГёГ­ГЁГҐ Г¬ГҐГІГ®Г¤Г»
 // ---------------------------------------------------------------------
-// Перегруженный метод. Проверить регистрационные данные и
-//идентифицировать пользователя
+// ГЏГҐГ°ГҐГЈГ°ГіГ¦ГҐГ­Г­Г»Г© Г¬ГҐГІГ®Г¤. ГЏГ°Г®ГўГҐГ°ГЁГІГј Г°ГҐГЈГЁГ±ГІГ°Г Г¶ГЁГ®Г­Г­Г»ГҐ Г¤Г Г­Г­Г»ГҐ ГЁ
+//ГЁГ¤ГҐГ­ГІГЁГґГЁГ¶ГЁГ°Г®ГўГ ГІГј ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї
 WORD  CBlockChain::AuthorizationCheck(LPTSTR pszLogin, LPTSTR pszPasswd)
 {
   WORD iUser;
@@ -47,7 +47,7 @@ WORD  CBlockChain::AuthorizationCheck(LPTSTR pszLogin, LPTSTR pszPasswd)
   if (!b)  b = m_rUsers.Load();
   if (b)  b = m_rUsers.AuthorizationCheck(pszLogin, pszPasswd, iUser);
   else {
-    // Ошибка загрузки регистра пользователей
+    // ГЋГёГЁГЎГЄГ  Г§Г ГЈГ°ГіГ§ГЄГЁ Г°ГҐГЈГЁГ±ГІГ°Г  ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«ГҐГ©
     ; //TraceW(m_rUsers.ErrorMessage());
   }
   return b ? iUser : UNAUTHORIZED;
@@ -57,27 +57,27 @@ WORD  CBlockChain::AuthorizationCheck(CString sLogin, CString sPasswd)
   return AuthorizationCheck(sLogin.GetBuffer(), sPasswd.GetBuffer());
 } // CBlockChain::AuthorizationCheck()
 
-// Авторизовать пользователя
+// ГЂГўГІГ®Г°ГЁГ§Г®ГўГ ГІГј ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї
 bool  CBlockChain::Authorize(WORD iUser)
 {
-  // Инициализация объекта криптографии
+  // Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї Г®ГЎГєГҐГЄГІГ  ГЄГ°ГЁГЇГІГ®ГЈГ°Г ГґГЁГЁ
   if (!m_aCrypt.IsInitialized())  m_aCrypt.Initialize();
   bool b = m_rUsers.IsLoaded();
-  if (b) {  //здесь регистр пользователей m_rUsers уже должен быть загружен!
+  if (b) {  //Г§Г¤ГҐГ±Гј Г°ГҐГЈГЁГ±ГІГ° ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«ГҐГ© m_rUsers ГіГ¦ГҐ Г¤Г®Г«Г¦ГҐГ­ ГЎГ»ГІГј Г§Г ГЈГ°ГіГ¦ГҐГ­!
     m_rUsers.SetOwner(iUser);
-    // Загрузить регистр текущих остатков
+    // Г‡Г ГЈГ°ГіГ§ГЁГІГј Г°ГҐГЈГЁГ±ГІГ° ГІГҐГЄГіГ№ГЁГµ Г®Г±ГІГ ГІГЄГ®Гў
     m_rBalances.SetOwner(m_rUsers.OwnerIndex(), m_rUsers.OwnerOrd());
     b = m_rBalances.Load();
   }
   if (b) {
-    // Загрузить регистр транзакций
+    // Г‡Г ГЈГ°ГіГ§ГЁГІГј Г°ГҐГЈГЁГ±ГІГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
     m_rTransacts.SetOwner(m_rUsers.OwnerIndex(), m_rUsers.OwnerOrd());
     b = m_rTransacts.Load();
   }
   return b;
 } // CBlockChain::Authorize()
 
-// Отменить авторизацию пользователя и обнулить данные объекта
+// ГЋГІГ¬ГҐГ­ГЁГІГј Г ГўГІГ®Г°ГЁГ§Г Г¶ГЁГѕ ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї ГЁ Г®ГЎГ­ГіГ«ГЁГІГј Г¤Г Г­Г­Г»ГҐ Г®ГЎГєГҐГЄГІГ 
 void  CBlockChain::CancelAuthorization()
 {
   m_rUsers.ClearOwner();
@@ -90,7 +90,7 @@ void  CBlockChain::CancelAuthorization()
   m_iActNode = 0xFFFF;
 } // CBlockChain::CancelAuthorization()
 
-// Связать пользователя и узел сети (после авторизации и запуска узла)
+// Г‘ГўГїГ§Г ГІГј ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї ГЁ ГіГ§ГҐГ« Г±ГҐГІГЁ (ГЇГ®Г±Г«ГҐ Г ГўГІГ®Г°ГЁГ§Г Г¶ГЁГЁ ГЁ Г§Г ГЇГіГ±ГЄГ  ГіГ§Г«Г )
 void  CBlockChain::TieUpUserAndNode(WORD iUser, WORD iNode)
 {
   ASSERT(0 <= iUser && iUser < NODECOUNT && 0 <= iNode && iNode < NODECOUNT);
@@ -98,7 +98,7 @@ void  CBlockChain::TieUpUserAndNode(WORD iUser, WORD iNode)
   m_tVoteRes[iNode].Init(iUser);
 } // CBlockChain::TieUpUserAndNode()
 
-// Отвязать пользователя от узла сети
+// ГЋГІГўГїГ§Г ГІГј ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї Г®ГІ ГіГ§Г«Г  Г±ГҐГІГЁ
 void  CBlockChain::UntieUserAndNode(WORD iNode)
 {
   if (0 <= iNode && iNode < NODECOUNT)
@@ -109,44 +109,44 @@ void  CBlockChain::UntieUserAndNode(WORD iNode)
   }
 } // CBlockChain::UntieUserAndNode()
 
-// Обработать сообщение DTB из очереди (полученное серверным каналом)
+// ГЋГЎГ°Г ГЎГ®ГІГ ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ DTB ГЁГ§ Г®Г·ГҐГ°ГҐГ¤ГЁ (ГЇГ®Г«ГіГ·ГҐГ­Г­Г®ГҐ Г±ГҐГ°ГўГҐГ°Г­Г»Г¬ ГЄГ Г­Г Г«Г®Г¬)
 bool  CBlockChain::ProcessDTB()
 {
   TMessageBuf *pmbDTB;  bool b;
   EnterCriticalSection(&g_cs);
-  b = m_paNode->m_oDTBQueue.Get(pmbDTB);    //дать DTB
+  b = m_paNode->m_oDTBQueue.Get(pmbDTB);    //Г¤Г ГІГј DTB
   LeaveCriticalSection(&g_cs);
   if (!b)  return b;
-  // Скопировать сообщение DTB в буфер для изменения
+  // Г‘ГЄГ®ГЇГЁГ°Г®ГўГ ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ DTB Гў ГЎГіГґГҐГ° Г¤Г«Гї ГЁГ§Г¬ГҐГ­ГҐГ­ГЁГї
   TMessageBuf  tMessBuf(pmbDTB->MessBuffer(), pmbDTB->MessageBytes());
   WORD iNodeFrom;
-  // Извлечь подкоманду из DTB, определить iNodeFrom
+  // Г€Г§ГўГ«ГҐГ·Гј ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Гі ГЁГ§ DTB, Г®ГЇГ°ГҐГ¤ГҐГ«ГЁГІГј iNodeFrom
   m_paNode->UnwrapData(iNodeFrom, &tMessBuf);
   TSubcmd tCmd;
   ESubcmdCode eSbcmd = ParseMessage(tMessBuf, tCmd);
   switch (eSbcmd) {
 case ScC_ATR:   //Add in Transaction Register
-    // Актуализировать в узле (tCmd._szNode) (tCmd._szBlock) блоков 
-    //регистра транзакций
-    m_iSrcNode = tCmd.GetNode();        //узел-источник для актуализации
-    m_nAbsentBlks = tCmd.GetBlockNo();  //колич недостающих блоков транзакций
+    // ГЂГЄГІГіГ Г«ГЁГ§ГЁГ°Г®ГўГ ГІГј Гў ГіГ§Г«ГҐ (tCmd._szNode) (tCmd._szBlock) ГЎГ«Г®ГЄГ®Гў 
+    //Г°ГҐГЈГЁГ±ГІГ°Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
+    m_iSrcNode = tCmd.GetNode();        //ГіГ§ГҐГ«-ГЁГ±ГІГ®Г·Г­ГЁГЄ Г¤Г«Гї Г ГЄГІГіГ Г«ГЁГ§Г Г¶ГЁГЁ
+    m_nAbsentBlks = tCmd.GetBlockNo();  //ГЄГ®Г«ГЁГ· Г­ГҐГ¤Г®Г±ГІГ ГѕГ№ГЁГµ ГЎГ«Г®ГЄГ®Гў ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
     b = AskTransactionBlock();
     break;
 case ScC_GTB:   //Get Transaction Register Block
-    b = GetTransactionBlock(tCmd.GetBlockNo(), tMessBuf);   //ответ - TBL
+    b = GetTransactionBlock(tCmd.GetBlockNo(), tMessBuf);   //Г®ГІГўГҐГІ - TBL
     RequestNoReply(iNodeFrom, tMessBuf);
     break;
 case ScC_TAQ:   //TransAction reQuest
-    b = TransActionreQuest(tCmd, tMessBuf);             //ответ - TAR
+    b = TransActionreQuest(tCmd, tMessBuf);             //Г®ГІГўГҐГІ - TAR
     RequestNoReply(iNodeFrom, tMessBuf);
     break;
 case ScC_TAR:   //TransAction request Replay
-    // Ответ удалённого узла на запрос транзакции занести 
-    //в таблицу голосования
+    // ГЋГІГўГҐГІ ГіГ¤Г Г«ВёГ­Г­Г®ГЈГ® ГіГ§Г«Г  Г­Г  Г§Г ГЇГ°Г®Г± ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ Г§Г Г­ГҐГ±ГІГЁ 
+    //Гў ГІГ ГЎГ«ГЁГ¶Гі ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї
     b = AddInVotingTable(iNodeFrom, &tMessBuf);
     break;
 case ScC_TBL:   //Transaction BLock
-	// Получен блок транзакции - добавить в регистр транзакций
+	// ГЏГ®Г«ГіГ·ГҐГ­ ГЎГ«Г®ГЄ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ - Г¤Г®ГЎГ ГўГЁГІГј Гў Г°ГҐГЈГЁГ±ГІГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
     b = AddTransactionBlock(tMessBuf);
     if (m_nAbsentBlks > 0)
       b = AskTransactionBlock();
@@ -155,122 +155,122 @@ case ScC_TBL:   //Transaction BLock
     break;
 case ScC_TRA:   //execute TRansAction
 	if (tCmd.GetTransNo() == m_rTransacts.GetNewTransactOrd())
-      // Регистр транзакций актуален - провести транзакцию на своём узле
+      // ГђГҐГЈГЁГ±ГІГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ© Г ГЄГІГіГ Г«ГҐГ­ - ГЇГ°Г®ГўГҐГ±ГІГЁ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГѕ Г­Г  Г±ГўГ®ВёГ¬ ГіГ§Г«ГҐ
       b = ExecuteTransactionOnLocalNode(tMessBuf);
 	else {
-      // Отложить проведение транзакции до актуализации регистра транзакций ...
-      m_mbTRA = tMessBuf;   //сохранить сообщение TRA
-      // ... а пока запросить недостающие блоки транзакций
+      // ГЋГІГ«Г®Г¦ГЁГІГј ГЇГ°Г®ГўГҐГ¤ГҐГ­ГЁГҐ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ Г¤Г® Г ГЄГІГіГ Г«ГЁГ§Г Г¶ГЁГЁ Г°ГҐГЈГЁГ±ГІГ°Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ© ...
+      m_mbTRA = tMessBuf;   //Г±Г®ГµГ°Г Г­ГЁГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ TRA
+      // ... Г  ГЇГ®ГЄГ  Г§Г ГЇГ°Г®Г±ГЁГІГј Г­ГҐГ¤Г®Г±ГІГ ГѕГ№ГЁГҐ ГЎГ«Г®ГЄГЁ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
       m_iSrcNode = iNodeFrom;
       //m_nTransBlock = m_rTransacts.GetNewTransactOrd();
       m_nAbsentBlks = tCmd.GetTransNo() - m_rTransacts.GetNewTransactOrd();
       b = AskTransactionBlock();
 	}
-case 0:         //это не команда - обработка не нужна
+case 0:         //ГЅГІГ® Г­ГҐ ГЄГ®Г¬Г Г­Г¤Г  - Г®ГЎГ°Г ГЎГ®ГІГЄГ  Г­ГҐ Г­ГіГ¦Г­Г 
     break;
   } //switch
   return b;
 } // CBlockChain::ProcessDTB()
 
-// Инициировать транзакцию
+// Г€Г­ГЁГ¶ГЁГЁГ°Г®ГўГ ГІГј ГІГ°Г Г­Г§Г ГЄГ¶ГЁГѕ
 bool  CBlockChain::StartTransaction(WORD iUserTo, double rAmount)
-//iUserTo - индекс пользователя "кому"
-//rAmount - сумма транзакции
+//iUserTo - ГЁГ­Г¤ГҐГЄГ± ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї "ГЄГ®Г¬Гі"
+//rAmount - Г±ГіГ¬Г¬Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
 {
-  // Проверить необходимые условия проведения транзакции
+  // ГЏГ°Г®ГўГҐГ°ГЁГІГј Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г»ГҐ ГіГ±Г«Г®ГўГЁГї ГЇГ°Г®ГўГҐГ¤ГҐГ­ГЁГї ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
   ASSERT(0 <= iUserTo && iUserTo < NODECOUNT);
-  WORD iUserFrom = m_rUsers.OwnerIndex();           //индекс владельца узла
+  WORD iUserFrom = m_rUsers.OwnerIndex();           //ГЁГ­Г¤ГҐГЄГ± ГўГ«Г Г¤ГҐГ«ГјГ¶Г  ГіГ§Г«Г 
   TBalance *ptBalance = m_rBalances.GetAt(iUserFrom);
   double rBalance = ptBalance->GetBalance();
   if (rAmount > rBalance) {
-    m_rBalances.SetError(7);    //сумма транзакции превышает остаток
+    m_rBalances.SetError(7);    //Г±ГіГ¬Г¬Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ ГЇГ°ГҐГўГ»ГёГ ГҐГІ Г®Г±ГІГ ГІГ®ГЄ
     m_pMainWin->ShowMessage(m_rBalances.ErrorMessage());
     return false;
   }
-  if (!m_paNode->IsQuorumPresent())  return false;  //нет кворума
-  //m_bTrans = true;              //флаг "Проводится собственная транзакция"
-  // Сформировать подкоманду TAQ "Запросить транзакцию"
-  WORD nTrans = m_rTransacts.GetNewTransactOrd();   //номер новой транзакции
+  if (!m_paNode->IsQuorumPresent())  return false;  //Г­ГҐГІ ГЄГўГ®Г°ГіГ¬Г 
+  //m_bTrans = true;              //ГґГ«Г ГЈ "ГЏГ°Г®ГўГ®Г¤ГЁГІГ±Гї Г±Г®ГЎГ±ГІГўГҐГ­Г­Г Гї ГІГ°Г Г­Г§Г ГЄГ¶ГЁГї"
+  // Г‘ГґГ®Г°Г¬ГЁГ°Г®ГўГ ГІГј ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Гі TAQ "Г‡Г ГЇГ°Г®Г±ГЁГІГј ГІГ°Г Г­Г§Г ГЄГ¶ГЁГѕ"
+  WORD nTrans = m_rTransacts.GetNewTransactOrd();   //Г­Г®Г¬ГҐГ° Г­Г®ГўГ®Г© ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
   TCHAR szMessBuf[ERMES_BUFSIZE];
   CreateTransactSubcommand(szMessBuf, _T("TAQ"),
                            nTrans, iUserFrom, iUserTo, rAmount);
   TMessageBuf mbRequest, *pmbTAR = NULL;
   WORD iNodeTo;  bool b;
-  m_nActTrans = m_nVote = 0;    //инициализация голосования
-  // Цикл голосования - 
-  //разослать запросы TAQ всем узлам сети (включая свой)
+  m_nActTrans = m_nVote = 0;    //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї
+  // Г–ГЁГЄГ« ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї - 
+  //Г°Г Г§Г®Г±Г«Г ГІГј Г§Г ГЇГ°Г®Г±Г» TAQ ГўГ±ГҐГ¬ ГіГ§Г«Г Г¬ Г±ГҐГІГЁ (ГўГЄГ«ГѕГ·Г Гї Г±ГўГ®Г©)
   for (b = m_paNode->GetFirstNode(iNodeTo, true);
        b; b = m_paNode->GetNextNode(iNodeTo, true)) {
-    mbRequest.PutMessage(szMessBuf);        //занести в буфер
+    mbRequest.PutMessage(szMessBuf);        //Г§Г Г­ГҐГ±ГІГЁ Гў ГЎГіГґГҐГ°
     if (iNodeTo == m_paNode->m_iOwnNode) {
       pmbTAR = EmulateReply(mbRequest);
-      // "Ответ" своего узла получен - занести в таблицу голосования
+      // "ГЋГІГўГҐГІ" Г±ГўГ®ГҐГЈГ® ГіГ§Г«Г  ГЇГ®Г«ГіГ·ГҐГ­ - Г§Г Г­ГҐГ±ГІГЁ Гў ГІГ ГЎГ«ГЁГ¶Гі ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї
       b = AddInVotingTable(iNodeTo, pmbTAR);
 	  delete pmbTAR;  pmbTAR = NULL;
     }
     else
-      RequestNoReply(iNodeTo, mbRequest);   //портит mbRequest!
+      RequestNoReply(iNodeTo, mbRequest);   //ГЇГ®Г°ГІГЁГІ mbRequest!
   }
   return true;
 } // CBlockChain::StartTransaction()
 
-// Проанализировать результаты голосования
+// ГЏГ°Г®Г Г­Г Г«ГЁГ§ГЁГ°Г®ГўГ ГІГј Г°ГҐГ§ГіГ«ГјГІГ ГІГ» ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї
 bool  CBlockChain::AnalyzeVoting()
 {
-  m_nActTrans = GetActualTransactOrd(); //актуальный номер транзакции
-  BuildActualNodeList(m_nActTrans); //построить список актуальных узлов
-  // Сформировать сообщение TRA выполнения транзакции
-  CreateTRAMessage(); //формируется m_mbTRA
-  bool b, bActual;  //признак актуальности "своего" узла
+  m_nActTrans = GetActualTransactOrd(); //Г ГЄГІГіГ Г«ГјГ­Г»Г© Г­Г®Г¬ГҐГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
+  BuildActualNodeList(m_nActTrans); //ГЇГ®Г±ГІГ°Г®ГЁГІГј Г±ГЇГЁГ±Г®ГЄ Г ГЄГІГіГ Г«ГјГ­Г»Гµ ГіГ§Г«Г®Гў
+  // Г‘ГґГ®Г°Г¬ГЁГ°Г®ГўГ ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ TRA ГўГ»ГЇГ®Г«Г­ГҐГ­ГЁГї ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
+  CreateTRAMessage(); //ГґГ®Г°Г¬ГЁГ°ГіГҐГІГ±Гї m_mbTRA
+  bool b, bActual;  //ГЇГ°ГЁГ§Г­Г ГЄ Г ГЄГІГіГ Г«ГјГ­Г®Г±ГІГЁ "Г±ГўГ®ГҐГЈГ®" ГіГ§Г«Г 
   TCHAR chMess[CHARBUFSIZE];  TMessageBuf mbRequest;
-  // Цикл по строкам таблицы голосования
+  // Г–ГЁГЄГ« ГЇГ® Г±ГІГ°Г®ГЄГ Г¬ ГІГ ГЎГ«ГЁГ¶Г» ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї
   for (WORD i = 0; i < m_nVote; i++) {
-    b = m_tVoteRes[i]._nTrans == m_nActTrans;   //i-й узел актуален?
+    b = m_tVoteRes[i]._nTrans == m_nActTrans;   //i-Г© ГіГ§ГҐГ« Г ГЄГІГіГ Г«ГҐГ­?
     if (i == m_paNode->m_iOwnNode)
-      bActual = b;      //актуальность "своего" узла
+      bActual = b;      //Г ГЄГІГіГ Г«ГјГ­Г®Г±ГІГј "Г±ГўГ®ГҐГЈГ®" ГіГ§Г«Г 
     else if (b) {
-      // Удалённый узел i актуален - послать ему сообщение TRA
-      mbRequest.PutMessage(m_mbTRA.Message());  //занести в буфер
-      // Послать узлу i
-      RequestNoReply(i, mbRequest); //портит mbRequest!
+      // Г“Г¤Г Г«ВёГ­Г­Г»Г© ГіГ§ГҐГ« i Г ГЄГІГіГ Г«ГҐГ­ - ГЇГ®Г±Г«Г ГІГј ГҐГ¬Гі Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ TRA
+      mbRequest.PutMessage(m_mbTRA.Message());  //Г§Г Г­ГҐГ±ГІГЁ Гў ГЎГіГґГҐГ°
+      // ГЏГ®Г±Г«Г ГІГј ГіГ§Г«Гі i
+      RequestNoReply(i, mbRequest); //ГЇГ®Г°ГІГЁГІ mbRequest!
     }
     else {
-      // Удалённый узел i не актуален - послать ему сообщение ATR.
-      // Сформировать сообщение ATR ...
+      // Г“Г¤Г Г«ВёГ­Г­Г»Г© ГіГ§ГҐГ« i Г­ГҐ Г ГЄГІГіГ Г«ГҐГ­ - ГЇГ®Г±Г«Г ГІГј ГҐГ¬Гі Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ ATR.
+      // Г‘ГґГ®Г°Г¬ГЁГ°Г®ГўГ ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ ATR ...
       swprintf_s(chMess, CHARBUFSIZE, _T("ATR %02d%02d"),
                  m_iActNodes[m_iActNode], m_nActTrans - m_tVoteRes[i]._nTrans);
-      NextActualNode(); //к следующему актуальному узлу
-      mbRequest.PutMessage(chMess); //занести в буфер
-      // Послать узлу i
-      RequestNoReply(i, mbRequest); //портит mbRequest!
+      NextActualNode(); //ГЄ Г±Г«ГҐГ¤ГіГѕГ№ГҐГ¬Гі Г ГЄГІГіГ Г«ГјГ­Г®Г¬Гі ГіГ§Г«Гі
+      mbRequest.PutMessage(chMess); //Г§Г Г­ГҐГ±ГІГЁ Гў ГЎГіГґГҐГ°
+      // ГЏГ®Г±Г«Г ГІГј ГіГ§Г«Гі i
+      RequestNoReply(i, mbRequest); //ГЇГ®Г°ГІГЁГІ mbRequest!
     }
   }
   return bActual;
 } // CBlockChain::AnalyzeVoting()
 
-// Сформировать сообщение TRA на основании информации из таблицы голосования
+// Г‘ГґГ®Г°Г¬ГЁГ°Г®ГўГ ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ TRA Г­Г  Г®Г±Г­Г®ГўГ Г­ГЁГЁ ГЁГ­ГґГ®Г°Г¬Г Г¶ГЁГЁ ГЁГ§ ГІГ ГЎГ«ГЁГ¶Г» ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї
 void  CBlockChain::CreateTRAMessage()
 {
   TCHAR szMess[CHARBUFSIZE];
-  WORD iNode     = m_paNode->m_iOwnNode,            //владелец узла
-       nTrans    = m_nActTrans,                     //номер транзакции
-       iUserFrom = m_tVoteRes[iNode]._iUserFrom,    //пользователь "кто"
-       iUserTo   = m_tVoteRes[iNode]._iUserTo;      //пользователь "кому"
-  double rAmount = m_tVoteRes[iNode]._rSum;         //сумма транзакции
+  WORD iNode     = m_paNode->m_iOwnNode,            //ГўГ«Г Г¤ГҐГ«ГҐГ¶ ГіГ§Г«Г 
+       nTrans    = m_nActTrans,                     //Г­Г®Г¬ГҐГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
+       iUserFrom = m_tVoteRes[iNode]._iUserFrom,    //ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гј "ГЄГІГ®"
+       iUserTo   = m_tVoteRes[iNode]._iUserTo;      //ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гј "ГЄГ®Г¬Гі"
+  double rAmount = m_tVoteRes[iNode]._rSum;         //Г±ГіГ¬Г¬Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
   CreateTransactSubcommand(szMess, _T("TRA"),
                            nTrans, iUserFrom, iUserTo, rAmount);
-  m_mbTRA.PutMessage(szMess);   //занести в буфер
+  m_mbTRA.PutMessage(szMess);   //Г§Г Г­ГҐГ±ГІГЁ Гў ГЎГіГґГҐГ°
 } // CBlockChain::CreateTRAMessage()
 
-// Провести транзакцию на своём узле
+// ГЏГ°Г®ГўГҐГ±ГІГЁ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГѕ Г­Г  Г±ГўГ®ВёГ¬ ГіГ§Г«ГҐ
 bool  CBlockChain::ExecuteTransactionOnLocalNode(TMessageBuf &mbTRA)
-//iUserFrom - индекс пользователя-отправителя
-//iUserTo   - индекс пользователя-получателя
-//rAmount   - сумма транзакции
+//iUserFrom - ГЁГ­Г¤ГҐГЄГ± ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї-Г®ГІГЇГ°Г ГўГЁГІГҐГ«Гї
+//iUserTo   - ГЁГ­Г¤ГҐГЄГ± ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї-ГЇГ®Г«ГіГ·Г ГІГҐГ«Гї
+//rAmount   - Г±ГіГ¬Г¬Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
 {
   TSubcmd tCmd;
   if (ParseMessage(mbTRA, tCmd) != ScC_TRA)  return false;
-  // Извлечь параметры транзакции
+  // Г€Г§ГўГ«ГҐГ·Гј ГЇГ Г°Г Г¬ГҐГІГ°Г» ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
   WORD nTrans = tCmd.GetTransNo(),
 #ifdef DBGHASHSIZE
        iUserFrom =
@@ -281,39 +281,39 @@ bool  CBlockChain::ExecuteTransactionOnLocalNode(TMessageBuf &mbTRA)
        iUserTo = m_rUsers.GetUserByLoginHash(tCmd._chHashTo);
 #endif
   double rAmount = tCmd.GetAmount();
-  // Сформировать блок транзакции
+  // Г‘ГґГ®Г°Г¬ГЁГ°Г®ГўГ ГІГј ГЎГ«Г®ГЄ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
   TTransact *ptRansact =
     m_rTransacts.CreateTransactBlock(iUserFrom, iUserTo, rAmount);
-  m_rTransacts.Add(ptRansact);  //добавить в регистр транзакций
-  m_pMainWin->AddInTransactTable(ptRansact);    //отобразить
-  // Скорректировать балансы пользователей
+  m_rTransacts.Add(ptRansact);  //Г¤Г®ГЎГ ГўГЁГІГј Гў Г°ГҐГЈГЁГ±ГІГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
+  m_pMainWin->AddInTransactTable(ptRansact);    //Г®ГІГ®ГЎГ°Г Г§ГЁГІГј
+  // Г‘ГЄГ®Г°Г°ГҐГЄГІГЁГ°Г®ГўГ ГІГј ГЎГ Г«Г Г­Г±Г» ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«ГҐГ©
   CorrectBalance(iUserFrom, -rAmount);
   CorrectBalance(iUserTo, rAmount);
   return true;
 } // CBlockChain::ExecuteTransactionOnLocalNode()
 
-// Закрыть регистры БД
+// Г‡Г ГЄГ°Г»ГІГј Г°ГҐГЈГЁГ±ГІГ°Г» ГЃГ„
 void  CBlockChain::CloseRegisters()
 {
-  m_rBalances.Save();   //регистр текущих остатков
-  m_rTransacts.Save();  //регистр транзакций
+  m_rBalances.Save();   //Г°ГҐГЈГЁГ±ГІГ° ГІГҐГЄГіГ№ГЁГµ Г®Г±ГІГ ГІГЄГ®Гў
+  m_rTransacts.Save();  //Г°ГҐГЈГЁГ±ГІГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
 } // CBlockChain::CloseRegisters()
 
 //private:
-// Внутренние методы
+// Г‚Г­ГіГІГ°ГҐГ­Г­ГЁГҐ Г¬ГҐГІГ®Г¤Г»
 // ---------------------------------------------------------------------
-// Сформировать подкоманду запроса, ответа или исполнения транзакции
+// Г‘ГґГ®Г°Г¬ГЁГ°Г®ГўГ ГІГј ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Гі Г§Г ГЇГ°Г®Г±Г , Г®ГІГўГҐГІГ  ГЁГ«ГЁ ГЁГ±ГЇГ®Г«Г­ГҐГ­ГЁГї ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
 void  CBlockChain::CreateTransactSubcommand(
   LPTSTR pszMsg, LPTSTR pszSbcmd, WORD nTrans,
   WORD iUserFrom, WORD iUserTo, double rAmount)
 {
-  // Сформировать подкоманду транзакции
+  // Г‘ГґГ®Г°Г¬ГЁГ°Г®ГўГ ГІГј ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Гі ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
 #ifdef DBGHASHSIZE
-  // Отладочный вариант
+  // ГЋГІГ«Г Г¤Г®Г·Г­Г»Г© ГўГ Г°ГЁГ Г­ГІ
   swprintf_s(pszMsg, CHARBUFSIZE, _T("%s %08d%02d%02d%015.2f"),
              pszSbcmd, nTrans, iUserFrom, iUserTo, rAmount);
 #else
-  // Рабочий вариант
+  // ГђГ ГЎГ®Г·ГЁГ© ГўГ Г°ГЁГ Г­ГІ
   swprintf_s(pszMsg, CHARBUFSIZE, _T("%s %08d"), pszSbcmd, nTrans);
   TUser *ptUserFrom = m_rUsers.GetAt(iUserFrom),
         *ptUserTo = m_rUsers.GetAt(iUserTo);
@@ -324,50 +324,50 @@ void  CBlockChain::CreateTransactSubcommand(
 #endif
 } // CBlockChain::CreateTransactSubcommand()
 
-// Послать сообщение прикладного уровня заданному узлу 
-//с упаковкой в блок данных, без получения ответа
+// ГЏГ®Г±Г«Г ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ ГЇГ°ГЁГЄГ«Г Г¤Г­Г®ГЈГ® ГіГ°Г®ГўГ­Гї Г§Г Г¤Г Г­Г­Г®Г¬Гі ГіГ§Г«Гі 
+//Г± ГіГЇГ ГЄГ®ГўГЄГ®Г© Гў ГЎГ«Г®ГЄ Г¤Г Г­Г­Г»Гµ, ГЎГҐГ§ ГЇГ®Г«ГіГ·ГҐГ­ГЁГї Г®ГІГўГҐГІГ 
 void  CBlockChain::RequestNoReply(WORD iNodeTo, TMessageBuf &mbRequest)
-//iNode     - индекс узла-адресата
-//mbRequest - буфер сообщения
+//iNode     - ГЁГ­Г¤ГҐГЄГ± ГіГ§Г«Г -Г Г¤Г°ГҐГ±Г ГІГ 
+//mbRequest - ГЎГіГґГҐГ° Г±Г®Г®ГЎГ№ГҐГ­ГЁГї
 {
   TMessageBuf *pmbReply = NULL;
   WORD iNodeFrom;
-  m_paNode->WrapData(iNodeTo, mbRequest);   //упаковать подкоманду в DTB
-  // Послать сообщение узлу iNodeTo
+  m_paNode->WrapData(iNodeTo, mbRequest);   //ГіГЇГ ГЄГ®ГўГ ГІГј ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Гі Гў DTB
+  // ГЏГ®Г±Г«Г ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ ГіГ§Г«Гі iNodeTo
   pmbReply = m_paNode->RequestAndReply(iNodeTo, mbRequest);
-  if (pmbReply) {       //ответ получен, он может быть только ACK
-	// Распаковать подкоманду из DTB и/или определить iNodeFrom
+  if (pmbReply) {       //Г®ГІГўГҐГІ ГЇГ®Г«ГіГ·ГҐГ­, Г®Г­ Г¬Г®Г¦ГҐГІ ГЎГ»ГІГј ГІГ®Г«ГјГЄГ® ACK
+	// ГђГ Г±ГЇГ ГЄГ®ГўГ ГІГј ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Гі ГЁГ§ DTB ГЁ/ГЁГ«ГЁ Г®ГЇГ°ГҐГ¤ГҐГ«ГЁГІГј iNodeFrom
     if (pmbReply->MessageBytes() > 0) {
       m_paNode->UnwrapData(iNodeFrom, pmbReply);
       ASSERT(iNodeFrom == iNodeTo);
     }
-    delete pmbReply;    //ответ не требует обработки
+    delete pmbReply;    //Г®ГІГўГҐГІ Г­ГҐ ГІГ°ГҐГЎГіГҐГІ Г®ГЎГ°Г ГЎГ®ГІГЄГЁ
   }
 } // RequestNoReply()
 
-// Эмулировать ответ своего узла на сообщение прикладного уровня
+// ГќГ¬ГіГ«ГЁГ°Г®ГўГ ГІГј Г®ГІГўГҐГІ Г±ГўГ®ГҐГЈГ® ГіГ§Г«Г  Г­Г  Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ ГЇГ°ГЁГЄГ«Г Г¤Г­Г®ГЈГ® ГіГ°Г®ГўГ­Гї
 TMessageBuf * CBlockChain::EmulateReply(TMessageBuf &mbTAQ)
 {
-  // Сформировать подкоманду TAR "Выполнить транзакцию" на месте 
-  //подкоманды TAQ
+  // Г‘ГґГ®Г°Г¬ГЁГ°Г®ГўГ ГІГј ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Гі TAR "Г‚Г»ГЇГ®Г«Г­ГЁГІГј ГІГ°Г Г­Г§Г ГЄГ¶ГЁГѕ" Г­Г  Г¬ГҐГ±ГІГҐ 
+  //ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Г» TAQ
   TMessageBuf *pmbTAR = new TMessageBuf(mbTAQ.Message());
   memcpy(pmbTAR->Message(), _T("TAR"), 3*sizeof(TCHAR));
   return pmbTAR;
 } // CBlockChain::EmulateReply()
 
-// Разобрать сообщение. Метод возвращает код подкоманды и описатель сообщ.
+// ГђГ Г§Г®ГЎГ°Г ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ. ГЊГҐГІГ®Г¤ ГўГ®Г§ГўГ°Г Г№Г ГҐГІ ГЄГ®Г¤ ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Г» ГЁ Г®ГЇГЁГ±Г ГІГҐГ«Гј Г±Г®Г®ГЎГ№.
 ESubcmdCode  CBlockChain::ParseMessage(TMessageBuf &mbMess, TSubcmd &tCmd)
-//mbMess[in] - сообщение
-//tCmd[out]  - результат разбора, описатель сообщения
+//mbMess[in] - Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ
+//tCmd[out]  - Г°ГҐГ§ГіГ«ГјГІГ ГІ Г°Г Г§ГЎГ®Г°Г , Г®ГЇГЁГ±Г ГІГҐГ«Гј Г±Г®Г®ГЎГ№ГҐГ­ГЁГї
 {
   static LPTSTR sCmds[] = {
-//Индекс             Код подкоманды
-/* 0 */ _T("ATR"),  //ScC_ATR = 11, Add in Transact Reg - Добавить в журнал та
-/* 1 */ _T("GTB"),  //ScC_GTB,      Get Trans log Block - Дать блок журнала та
-/* 2 */ _T("TAQ"),  //ScC_TAQ,      TransAction reQuest - Запрос транзакции
-/* 3 */ _T("TAR"),  //ScC_TAR,      TransAction Reply   - Ответ на запрос тран
-/* 4 */ _T("TBL"),  //ScC_TBL,      Transact log BLock  - Блок транзакции
-/* 5 */ _T("TRA"),  //ScC_TRA,      execute TRansAction - Выполнить транзакцию
+//Г€Г­Г¤ГҐГЄГ±             ГЉГ®Г¤ ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Г»
+/* 0 */ _T("ATR"),  //ScC_ATR = 11, Add in Transact Reg - Г„Г®ГЎГ ГўГЁГІГј Гў Г¦ГіГ°Г­Г Г« ГІГ 
+/* 1 */ _T("GTB"),  //ScC_GTB,      Get Trans log Block - Г„Г ГІГј ГЎГ«Г®ГЄ Г¦ГіГ°Г­Г Г«Г  ГІГ 
+/* 2 */ _T("TAQ"),  //ScC_TAQ,      TransAction reQuest - Г‡Г ГЇГ°Г®Г± ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
+/* 3 */ _T("TAR"),  //ScC_TAR,      TransAction Reply   - ГЋГІГўГҐГІ Г­Г  Г§Г ГЇГ°Г®Г± ГІГ°Г Г­
+/* 4 */ _T("TBL"),  //ScC_TBL,      Transact log BLock  - ГЃГ«Г®ГЄ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
+/* 5 */ _T("TRA"),  //ScC_TRA,      execute TRansAction - Г‚Г»ГЇГ®Г«Г­ГЁГІГј ГІГ°Г Г­Г§Г ГЄГ¶ГЁГѕ
   };
   static WORD n = sizeof(sCmds) / sizeof(LPTSTR);
   WORD i = 0;
@@ -378,47 +378,47 @@ ESubcmdCode  CBlockChain::ParseMessage(TMessageBuf &mbMess, TSubcmd &tCmd)
   }
   tCmd._eCode = (ESubcmdCode)0;
 SbcmdFound:
-  // Подкоманда определена, сформировть описатель
+  // ГЏГ®Г¤ГЄГ®Г¬Г Г­Г¤Г  Г®ГЇГ°ГҐГ¤ГҐГ«ГҐГ­Г , Г±ГґГ®Г°Г¬ГЁГ°Г®ГўГІГј Г®ГЇГЁГ±Г ГІГҐГ«Гј
   switch (tCmd._eCode) {
 case ScC_ATR:   //Add in Transaction Register
-    // Номер (индекс) узла
+    // ГЌГ®Г¬ГҐГ° (ГЁГ­Г¤ГҐГЄГ±) ГіГ§Г«Г 
     tCmd.SetNode(mbMess.Message() + CMDFIELDSIZ);
-    // Количество блоков
+    // ГЉГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЎГ«Г®ГЄГ®Гў
     tCmd.SetBlockNo(mbMess.Message() + CMDFIELDSIZ+SHORTNUMSIZ);
     break;
 case ScC_GTB:   //Get Transaction Register Block
-    // Номер блока от конца цепи
+    // ГЌГ®Г¬ГҐГ° ГЎГ«Г®ГЄГ  Г®ГІ ГЄГ®Г­Г¶Г  Г¶ГҐГЇГЁ
     tCmd.SetBlockNo(mbMess.Message() + CMDFIELDSIZ);
     break;
 case ScC_TAQ:   //TransAction reQuest
 case ScC_TAR:   //TransAction Reply
 case ScC_TRA:   //execute TRansAction
-    // Номер транзакции
+    // ГЌГ®Г¬ГҐГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
     tCmd.SetTransNo(mbMess.Message() + TRANSNUMOFF);
-    // Хеш-код отправителя
+    // Г•ГҐГё-ГЄГ®Г¤ Г®ГІГЇГ°Г ГўГЁГІГҐГ«Гї
     tCmd.SetHashFrom(mbMess.MessBuffer() + HASHFROMOFF*sizeof(TCHAR));
-    // Хеш-код получателя
+    // Г•ГҐГё-ГЄГ®Г¤ ГЇГ®Г«ГіГ·Г ГІГҐГ«Гї
     tCmd.SetHashTo(mbMess.MessBuffer() + HASHTO_OFFS*sizeof(TCHAR));
-    // Сумма транзакции
+    // Г‘ГіГ¬Г¬Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
     tCmd.SetAmount(mbMess.Message() + AMOUNT_OFFS);
     break;
 case ScC_TBL:   //Transact register BLock
-    // Номер транзакции
+    // ГЌГ®Г¬ГҐГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
     tCmd.SetTransNo(mbMess.Message() + TRANSNUMOFF);
-    // Хеш-код отправителя
+    // Г•ГҐГё-ГЄГ®Г¤ Г®ГІГЇГ°Г ГўГЁГІГҐГ«Гї
     tCmd.SetHashFrom(mbMess.MessBuffer() + HASHFROMOFF*sizeof(TCHAR));
-    // Хеш-код получателя
+    // Г•ГҐГё-ГЄГ®Г¤ ГЇГ®Г«ГіГ·Г ГІГҐГ«Гї
     tCmd.SetHashTo(mbMess.MessBuffer() + HASHTO_OFFS*sizeof(TCHAR));
-    // Сумма транзакции
+    // Г‘ГіГ¬Г¬Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
     tCmd.SetAmount(mbMess.Message() + AMOUNT_OFFS);
-    // Хеш-код предыдущего блока транзакции
+    // Г•ГҐГё-ГЄГ®Г¤ ГЇГ°ГҐГ¤Г»Г¤ГіГ№ГҐГЈГ® ГЎГ«Г®ГЄГ  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
     tCmd.SetHashPrev(mbMess.MessBuffer() + HASHPREVOFF*sizeof(TCHAR));
     break;
   } //switch
-  return tCmd._eCode;   //подкоманда не определена
+  return tCmd._eCode;   //ГЇГ®Г¤ГЄГ®Г¬Г Г­Г¤Г  Г­ГҐ Г®ГЇГ°ГҐГ¤ГҐГ«ГҐГ­Г 
 } // CBlockChain::ParseMessage()
 
-// Поместить ответ в таблицу голосования
+// ГЏГ®Г¬ГҐГ±ГІГЁГІГј Г®ГІГўГҐГІ Гў ГІГ ГЎГ«ГЁГ¶Гі ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї
 bool  CBlockChain::AddInVotingTable(WORD iNodeFrom, TMessageBuf *pmbTAR)
 {
   TSubcmd tCmd;
@@ -434,35 +434,35 @@ bool  CBlockChain::AddInVotingTable(WORD iNodeFrom, TMessageBuf *pmbTAR)
   CString sNode, sTrans, sAmount;
   TCHAR szOwner[NAMESBUFSIZ], szUserFrom[NAMESBUFSIZ],
         szUserTo[NAMESBUFSIZ], *pszFields[VOTECOLNUM];
-  sNode.Format(_T("Узел #%d"), iNodeFrom+1);
-  pszFields[0] = sNode.GetBuffer();     //номер узла
+  sNode.Format(_T("Г“Г§ГҐГ« #%d"), iNodeFrom+1);
+  pszFields[0] = sNode.GetBuffer();     //Г­Г®Г¬ГҐГ° ГіГ§Г«Г 
   UserRegister()->UserName(m_tVoteRes[iNodeFrom]._iUser, szOwner);
-  pszFields[1] = szOwner;               //имя владельца узла
-  pszFields[2] = tCmd._szTrans;         //номер транзакции
+  pszFields[1] = szOwner;               //ГЁГ¬Гї ГўГ«Г Г¤ГҐГ«ГјГ¶Г  ГіГ§Г«Г 
+  pszFields[2] = tCmd._szTrans;         //Г­Г®Г¬ГҐГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
   UserRegister()->UserName(m_tVoteRes[iNodeFrom]._iUserFrom, szUserFrom);
-  pszFields[3] = szUserFrom;            //имя пользователя-отправителя
+  pszFields[3] = szUserFrom;            //ГЁГ¬Гї ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї-Г®ГІГЇГ°Г ГўГЁГІГҐГ«Гї
   UserRegister()->UserName(m_tVoteRes[iNodeFrom]._iUserTo, szUserTo);
-  pszFields[4] = szUserTo;              //имя пользователя-получателя
+  pszFields[4] = szUserTo;              //ГЁГ¬Гї ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї-ГЇГ®Г«ГіГ·Г ГІГҐГ«Гї
   sAmount.Format(_T("%.2lf"), m_tVoteRes[iNodeFrom]._rSum);
-  pszFields[5] = sAmount.GetBuffer();   //сумма
+  pszFields[5] = sAmount.GetBuffer();   //Г±ГіГ¬Г¬Г 
   m_pMainWin->AddInVotingTable(pszFields);
-  m_nVote++;    //подсчёт проголосовавших узлов
-  if (!IsTheVoteOver())  return b;  //ещё не все проголосовали
-  // Проголосовали все - проанализировать результаты голосования
-  b = AnalyzeVoting();  //опр акт номер транзакции и список акт узлов
+  m_nVote++;    //ГЇГ®Г¤Г±Г·ВёГІ ГЇГ°Г®ГЈГ®Г«Г®Г±Г®ГўГ ГўГёГЁГµ ГіГ§Г«Г®Гў
+  if (!IsTheVoteOver())  return b;  //ГҐГ№Вё Г­ГҐ ГўГ±ГҐ ГЇГ°Г®ГЈГ®Г«Г®Г±Г®ГўГ Г«ГЁ
+  // ГЏГ°Г®ГЈГ®Г«Г®Г±Г®ГўГ Г«ГЁ ГўГ±ГҐ - ГЇГ°Г®Г Г­Г Г«ГЁГ§ГЁГ°Г®ГўГ ГІГј Г°ГҐГ§ГіГ«ГјГІГ ГІГ» ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї
+  b = AnalyzeVoting();  //Г®ГЇГ° Г ГЄГІ Г­Г®Г¬ГҐГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ ГЁ Г±ГЇГЁГ±Г®ГЄ Г ГЄГІ ГіГ§Г«Г®Гў
   if (!b) {
-    // Локальный узел неактуален - дополнить регистр транзакций локального 
-    //узла недостающими блоками транзакций
-    m_pMainWin->ApproveTransaction(1);      //отобразить отклонение транзакции
-    m_iSrcNode = m_iActNodes[m_iActNode];   //узел-источник для актуализации
-    NextActualNode();   //к следующему актуальному узлу
+    // Г‹Г®ГЄГ Г«ГјГ­Г»Г© ГіГ§ГҐГ« Г­ГҐГ ГЄГІГіГ Г«ГҐГ­ - Г¤Г®ГЇГ®Г«Г­ГЁГІГј Г°ГҐГЈГЁГ±ГІГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ© Г«Г®ГЄГ Г«ГјГ­Г®ГЈГ® 
+    //ГіГ§Г«Г  Г­ГҐГ¤Г®Г±ГІГ ГѕГ№ГЁГ¬ГЁ ГЎГ«Г®ГЄГ Г¬ГЁ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
+    m_pMainWin->ApproveTransaction(1);      //Г®ГІГ®ГЎГ°Г Г§ГЁГІГј Г®ГІГЄГ«Г®Г­ГҐГ­ГЁГҐ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
+    m_iSrcNode = m_iActNodes[m_iActNode];   //ГіГ§ГҐГ«-ГЁГ±ГІГ®Г·Г­ГЁГЄ Г¤Г«Гї Г ГЄГІГіГ Г«ГЁГ§Г Г¶ГЁГЁ
+    NextActualNode();   //ГЄ Г±Г«ГҐГ¤ГіГѕГ№ГҐГ¬Гі Г ГЄГІГіГ Г«ГјГ­Г®Г¬Гі ГіГ§Г«Гі
     m_nAbsentBlks = m_nActTrans - m_tVoteRes[m_paNode->m_iOwnNode]._nTrans;
-    b = AskTransactionBlock();  //начать актуализацию локального узла
+    b = AskTransactionBlock();  //Г­Г Г·Г ГІГј Г ГЄГІГіГ Г«ГЁГ§Г Г¶ГЁГѕ Г«Г®ГЄГ Г«ГјГ­Г®ГЈГ® ГіГ§Г«Г 
     return b;
   }
-  // Локальный узел актуален - можно сразу провести транзакцию
+  // Г‹Г®ГЄГ Г«ГјГ­Г»Г© ГіГ§ГҐГ« Г ГЄГІГіГ Г«ГҐГ­ - Г¬Г®Г¦Г­Г® Г±Г°Г Г§Гі ГЇГ°Г®ГўГҐГ±ГІГЁ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГѕ
   b = ExecuteTransactionOnLocalNode(m_mbTRA);
-    /* Взять "свою" строку в таблице голосования  TVotingRes
+    /* Г‚Г§ГїГІГј "Г±ГўГ®Гѕ" Г±ГІГ°Г®ГЄГі Гў ГІГ ГЎГ«ГЁГ¶ГҐ ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї  TVotingRes
     if (iNodeFrom != m_paNode->m_iOwnNode) {
       sTrans.Format(_T("%08d"), m_tVoteRes[m_paNode->m_iOwnNode]._nTrans);
       sAmount.Format(_T("%015.2lf"), m_tVoteRes[m_paNode->m_iOwnNode]._rSum);
@@ -475,27 +475,27 @@ bool  CBlockChain::AddInVotingTable(WORD iNodeFrom, TMessageBuf *pmbTAR)
   return b;
 } // CBlockChain::AddInVotingTable()
 
-// Запросить блок транзакции для актуализации регистра транзакций
+// Г‡Г ГЇГ°Г®Г±ГЁГІГј ГЎГ«Г®ГЄ ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ Г¤Г«Гї Г ГЄГІГіГ Г«ГЁГ§Г Г¶ГЁГЁ Г°ГҐГЈГЁГ±ГІГ°Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
 bool  CBlockChain::AskTransactionBlock()
 {
   ASSERT(m_nAbsentBlks > 0);
-  // Сформировать сообщение GTB ...
+  // Г‘ГґГ®Г°Г¬ГЁГ°Г®ГўГ ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ GTB ...
   TMessageBuf mbGTB;  TCHAR szMess[CHARBUFSIZE];
   swprintf_s(szMess, CHARBUFSIZE, _T("GTB %02d"), m_rTransacts.GetNewTransactOrd());
-  mbGTB.PutMessage(szMess);     //занести в буфер
-  // ... послать заданному узлу
+  mbGTB.PutMessage(szMess);     //Г§Г Г­ГҐГ±ГІГЁ Гў ГЎГіГґГҐГ°
+  // ... ГЇГ®Г±Г«Г ГІГј Г§Г Г¤Г Г­Г­Г®Г¬Гі ГіГ§Г«Гі
   RequestNoReply(m_iSrcNode, mbGTB);
   m_nAbsentBlks--;
   return true;
 } // CBlockChain::AskTransactionBlock()
 
-// Обработать сообщение GTB "Дать блок регистра транзакций".
-//В ответ формируется сообщение TBL.
+// ГЋГЎГ°Г ГЎГ®ГІГ ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ GTB "Г„Г ГІГј ГЎГ«Г®ГЄ Г°ГҐГЈГЁГ±ГІГ°Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©".
+//Г‚ Г®ГІГўГҐГІ ГґГ®Г°Г¬ГЁГ°ГіГҐГІГ±Гї Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ TBL.
 bool  CBlockChain::GetTransactionBlock(WORD nBlock, TMessageBuf &mbGTBL)
-//nBlock[in]  - номер запрашиваемого блока (1,2,..)
-//mbGTBL[out] - буфер сообщения: на входе GTB, на выходе TBL
+//nBlock[in]  - Г­Г®Г¬ГҐГ° Г§Г ГЇГ°Г ГёГЁГўГ ГҐГ¬Г®ГЈГ® ГЎГ«Г®ГЄГ  (1,2,..)
+//mbGTBL[out] - ГЎГіГґГҐГ° Г±Г®Г®ГЎГ№ГҐГ­ГЁГї: Г­Г  ГўГµГ®Г¤ГҐ GTB, Г­Г  ГўГ»ГµГ®Г¤ГҐ TBL
 {
-  TCHAR szMess[CHARBUFSIZE];    //буфер сообщения (TCHAR=wchar_t)
+  TCHAR szMess[CHARBUFSIZE];    //ГЎГіГґГҐГ° Г±Г®Г®ГЎГ№ГҐГ­ГЁГї (TCHAR=wchar_t)
   TTransact *ptRansact = m_rTransacts.GetAt(nBlock - 1);
   WORD iUserFrom = m_rUsers.GetUserByLoginHash(ptRansact->_chHashSrc),
        iUserTo = m_rUsers.GetUserByLoginHash(ptRansact->_chHashDst),
@@ -508,11 +508,11 @@ bool  CBlockChain::GetTransactionBlock(WORD nBlock, TMessageBuf &mbGTBL)
   return true;
 } // CBlockChain::GetTransactionBlock()
 
-// Обработать сообщение TAQ "Запрос транзакции".
-//В ответ формируется сообщение TAR.
+// ГЋГЎГ°Г ГЎГ®ГІГ ГІГј Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ TAQ "Г‡Г ГЇГ°Г®Г± ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ".
+//Г‚ Г®ГІГўГҐГІ ГґГ®Г°Г¬ГЁГ°ГіГҐГІГ±Гї Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ TAR.
 bool  CBlockChain::TransActionreQuest(TSubcmd &tCmd, TMessageBuf &mbTAQR)
-//tCmd[out]      - результат разбора, описатель сообщения TAQ
-//mbTAQR[in/out] - буфер сообщения: на входе TAQ, на выходе TAR
+//tCmd[out]      - Г°ГҐГ§ГіГ«ГјГІГ ГІ Г°Г Г§ГЎГ®Г°Г , Г®ГЇГЁГ±Г ГІГҐГ«Гј Г±Г®Г®ГЎГ№ГҐГ­ГЁГї TAQ
+//mbTAQR[in/out] - ГЎГіГґГҐГ° Г±Г®Г®ГЎГ№ГҐГ­ГЁГї: Г­Г  ГўГµГ®Г¤ГҐ TAQ, Г­Г  ГўГ»ГµГ®Г¤ГҐ TAR
 {
   LPTSTR pszMsg = mbTAQR.Message();  DWORD n;
   swscanf_s((LPTSTR)tCmd._chHashFrom, _T("%02d"), &n);
@@ -521,14 +521,14 @@ bool  CBlockChain::TransActionreQuest(TSubcmd &tCmd, TMessageBuf &mbTAQR)
   double rAmount = ptBalnc->GetBalance();
   TCHAR chMess[CHARBUFSIZE];
   swprintf_s(chMess, CHARBUFSIZE, _T("TAR %08d%015.2f"), nTrans, rAmount);
-  n = CMDFIELDSIZ + LONGNUMSIZE;    //смещение значения rAmount в chMess
+  n = CMDFIELDSIZ + LONGNUMSIZE;    //Г±Г¬ГҐГ№ГҐГ­ГЁГҐ Г§Г­Г Г·ГҐГ­ГЁГї rAmount Гў chMess
   memcpy(mbTAQR.Message(), chMess, sizeof(TCHAR)*n);
   memcpy(mbTAQR.Message() + AMOUNT_OFFS,
          chMess + n, sizeof(TCHAR)*NAMESBUFSIZ);
   return true;
 } // CBlockChain::TransActionreQuest()
 
-// Добавить в регистр транзакций новый блок (при актуализации).
+// Г„Г®ГЎГ ГўГЁГІГј Гў Г°ГҐГЈГЁГ±ГІГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ© Г­Г®ГўГ»Г© ГЎГ«Г®ГЄ (ГЇГ°ГЁ Г ГЄГІГіГ Г«ГЁГ§Г Г¶ГЁГЁ).
 bool  CBlockChain::AddTransactionBlock(TMessageBuf &mbTBL)
 {
   TSubcmd tCmd;
@@ -546,43 +546,43 @@ bool  CBlockChain::AddTransactionBlock(TMessageBuf &mbTBL)
     tRansact.SetHashSource(ptUser->_chLogHash, HASHSIZE);
     ptUser = m_rUsers.GetAt(iUserTo);
     tRansact.SetHashDestination(ptUser->_chLogHash, HASHSIZE);
-    // Вставить хеш-код последней транзакции
+    // Г‚Г±ГІГ ГўГЁГІГј ГµГҐГё-ГЄГ®Г¤ ГЇГ®Г±Г«ГҐГ¤Г­ГҐГ© ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ
     CTransRegister::SymbolsToHash((char *)(tCmd._chHashPrev),
                                   tRansact._chPrevHash);
     tRansact.SetAmount(rAmount);
-    m_rTransacts.Add(&tRansact);    //добавить в регистр транзакций
-    m_pMainWin->AddInTransactTable(&tRansact);  //отобразить
-    // Скорректировать балансы пользователей
+    m_rTransacts.Add(&tRansact);    //Г¤Г®ГЎГ ГўГЁГІГј Гў Г°ГҐГЈГЁГ±ГІГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
+    m_pMainWin->AddInTransactTable(&tRansact);  //Г®ГІГ®ГЎГ°Г Г§ГЁГІГј
+    // Г‘ГЄГ®Г°Г°ГҐГЄГІГЁГ°Г®ГўГ ГІГј ГЎГ Г«Г Г­Г±Г» ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«ГҐГ©
     CorrectBalance(iUserFrom, -rAmount);
     CorrectBalance(iUserTo, rAmount);
   }
   else {
-    // Ошибка - нарушение последовательности блоков хеш-чейн
+    // ГЋГёГЁГЎГЄГ  - Г­Г Г°ГіГёГҐГ­ГЁГҐ ГЇГ®Г±Г«ГҐГ¤Г®ГўГ ГІГҐГ«ГјГ­Г®Г±ГІГЁ ГЎГ«Г®ГЄГ®Гў ГµГҐГё-Г·ГҐГ©Г­
     ASSERT(FALSE);
   }
   return b;
 } // CBlockChain::AddTransactionBlock()
 
-// Скорректировать текущий остаток счёта пользователя на заданную сумму
+// Г‘ГЄГ®Г°Г°ГҐГЄГІГЁГ°Г®ГўГ ГІГј ГІГҐГЄГіГ№ГЁГ© Г®Г±ГІГ ГІГ®ГЄ Г±Г·ВёГІГ  ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї Г­Г  Г§Г Г¤Г Г­Г­ГіГѕ Г±ГіГ¬Г¬Гі
 void  CBlockChain::CorrectBalance(WORD iUser, double rTurnover)
-//iUser     - индекс пользователя
-//rTurnover - сумма оборота (+/-)
+//iUser     - ГЁГ­Г¤ГҐГЄГ± ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї
+//rTurnover - Г±ГіГ¬Г¬Г  Г®ГЎГ®Г°Г®ГІГ  (+/-)
 {
   TBalance *ptBalnc = m_rBalances.GetAt(iUser);
-  double rSum = ptBalnc->GetBalance();  //текущий остаток
+  double rSum = ptBalnc->GetBalance();  //ГІГҐГЄГіГ№ГЁГ© Г®Г±ГІГ ГІГ®ГЄ
   rSum += rTurnover;
   ptBalnc->SetBalance(rSum);  m_rBalances.SetChanged();
-  // Если свой баланс - отобразить
+  // Г…Г±Г«ГЁ Г±ГўГ®Г© ГЎГ Г«Г Г­Г± - Г®ГІГ®ГЎГ°Г Г§ГЁГІГј
   if (iUser == m_paNode->m_iOwner)  m_pMainWin->ShowBalance(rSum);
 } // CBlockChain::CorrectBalance()
 
-// Полностью пересчитать текущий остаток счёта заданного пользователя
+// ГЏГ®Г«Г­Г®Г±ГІГјГѕ ГЇГҐГ°ГҐГ±Г·ГЁГІГ ГІГј ГІГҐГЄГіГ№ГЁГ© Г®Г±ГІГ ГІГ®ГЄ Г±Г·ВёГІГ  Г§Г Г¤Г Г­Г­Г®ГЈГ® ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї
 void  CBlockChain::CalculateBalance(WORD iUser)
 {
   double rSum = 1000.0, rTurnover;
   WORD iUserFrom, iUserTo, n = m_rTransacts.ItemCount();
   TTransact *ptRansact;
-  // Просмотр всего регистра транзакций
+  // ГЏГ°Г®Г±Г¬Г®ГІГ° ГўГ±ГҐГЈГ® Г°ГҐГЈГЁГ±ГІГ°Г  ГІГ°Г Г­Г§Г ГЄГ¶ГЁГ©
   for (WORD i = 0; i < n; i++) {
     ptRansact = m_rTransacts.GetAt(i);
     iUserFrom = m_rUsers.GetUserByLoginHash(ptRansact->_chHashSrc),
@@ -595,11 +595,11 @@ void  CBlockChain::CalculateBalance(WORD iUser)
   }
   TBalance *ptBalnc = m_rBalances.GetAt(iUser);
   ptBalnc->SetBalance(rSum);  m_rBalances.SetChanged();
-  // Если свой баланс - отобразить
+  // Г…Г±Г«ГЁ Г±ГўГ®Г© ГЎГ Г«Г Г­Г± - Г®ГІГ®ГЎГ°Г Г§ГЁГІГј
   if (iUser == m_paNode->m_iOwner)  m_pMainWin->ShowBalance(rSum);
 } // CBlockChain::CalculateBalance()
 
-// Найти максимальный номер транзакции в таблице голосования
+// ГЌГ Г©ГІГЁ Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г© Г­Г®Г¬ГҐГ° ГІГ°Г Г­Г§Г ГЄГ¶ГЁГЁ Гў ГІГ ГЎГ«ГЁГ¶ГҐ ГЈГ®Г«Г®Г±Г®ГўГ Г­ГЁГї
 WORD  CBlockChain::GetActualTransactOrd()
 {
   WORD iAct = 0;
@@ -610,7 +610,7 @@ WORD  CBlockChain::GetActualTransactOrd()
   return m_tVoteRes[iAct]._nTrans;
 } // CBlockChain::GetActualTransactOrd()
 
-// Построить список актуальных узлов
+// ГЏГ®Г±ГІГ°Г®ГЁГІГј Г±ГЇГЁГ±Г®ГЄ Г ГЄГІГіГ Г«ГјГ­Г»Гµ ГіГ§Г«Г®Гў
 void  CBlockChain::BuildActualNodeList(WORD nTransAct)
 {
   WORD i;
@@ -618,10 +618,10 @@ void  CBlockChain::BuildActualNodeList(WORD nTransAct)
     if (m_tVoteRes[i]._nTrans == nTransAct) {
       m_iActNodes[m_nActNodes++] = i;
     }
-  m_iActNode = 0;   //на первый элемент списка "актуальных" узлов
+  m_iActNode = 0;   //Г­Г  ГЇГҐГ°ГўГ»Г© ГЅГ«ГҐГ¬ГҐГ­ГІ Г±ГЇГЁГ±ГЄГ  "Г ГЄГІГіГ Г«ГјГ­Г»Гµ" ГіГ§Г«Г®Гў
 } // CBlockChain::BuildActualNodeList()
 
-// Перейти к следующему актуальному узлу в списке (циклический перебор)
+// ГЏГҐГ°ГҐГ©ГІГЁ ГЄ Г±Г«ГҐГ¤ГіГѕГ№ГҐГ¬Гі Г ГЄГІГіГ Г«ГјГ­Г®Г¬Гі ГіГ§Г«Гі Гў Г±ГЇГЁГ±ГЄГҐ (Г¶ГЁГЄГ«ГЁГ·ГҐГ±ГЄГЁГ© ГЇГҐГ°ГҐГЎГ®Г°)
 void  CBlockChain::NextActualNode()
 {
   m_iActNode++;
