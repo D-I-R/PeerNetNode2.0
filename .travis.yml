@@ -16,11 +16,3 @@ language: cpp
 sudo: false
 compiler:
   - clang
-before_script:
-  - CHECKOUT_DIR=$PWD && cd .. 
-  - chmod a+x $CHECKOUT_DIR/support/checkout-deps.sh 
-script:
-  - mkdir build && cd build
-  - PATH="~/.local/bin:$PATH"
-  - CC=clang-3.7 CXX=clang-3.7 python ../configure.py --enable-optimize
-  - ambuild
