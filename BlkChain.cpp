@@ -6,8 +6,8 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-//#include "stdafx.h"
-#include "pch.h"
+#include "stdafx.h"
+//#include "pch.h"
 #include "PeerNetDlg.h" //#include "PeerNetNode.h" //#include "BlkChain.h"
 
 #ifdef _DEBUG
@@ -37,7 +37,7 @@ CBlockChain::~CBlockChain(void)
 
 //public:
 // Внешние методы
-// -------------------------------------------------------------------
+// ---------------------------------------------------------------------
 // Перегруженный метод. Проверить регистрационные данные и
 //идентифицировать пользователя
 WORD  CBlockChain::AuthorizationCheck(LPTSTR pszLogin, LPTSTR pszPasswd)
@@ -133,7 +133,7 @@ case ScC_ATR:   //Add in Transaction Register
     b = AskTransactionBlock();
     break;
 case ScC_GTB:   //Get Transaction Register Block
-    b = GetTransactionBlock(tCmd.GetBlockNo(), tMessBuf); //ответ - TBL
+    b = GetTransactionBlock(tCmd.GetBlockNo(), tMessBuf);   //ответ - TBL
     RequestNoReply(iNodeFrom, tMessBuf);
     break;
 case ScC_TAQ:   //TransAction reQuest
@@ -148,9 +148,6 @@ case ScC_TAR:   //TransAction request Replay
 case ScC_TBL:   //Transaction BLock
 	// Получен блок транзакции - добавить в регистр транзакций
     b = AddTransactionBlock(tMessBuf);
-    //if (m_bTrans) {
-    // Проводится собственная транзакция
-    //}
     if (m_nAbsentBlks > 0)
       b = AskTransactionBlock();
     else
@@ -182,7 +179,8 @@ bool  CBlockChain::StartTransaction(WORD iUserTo, double rAmount)
 {
   // Проверить необходимые условия проведения транзакции
   ASSERT(0 <= iUserTo && iUserTo < NODECOUNT);
-  TBalance *ptBalance = m_rBalances.GetAt(iUserTo);
+  WORD iUserFrom = m_rUsers.OwnerIndex();           //индекс владельца узла
+  TBalance *ptBalance = m_rBalances.GetAt(iUserFrom);
   double rBalance = ptBalance->GetBalance();
   if (rAmount > rBalance) {
     m_rBalances.SetError(7);    //сумма транзакции превышает остаток
@@ -193,7 +191,6 @@ bool  CBlockChain::StartTransaction(WORD iUserTo, double rAmount)
   //m_bTrans = true;              //флаг "Проводится собственная транзакция"
   // Сформировать подкоманду TAQ "Запросить транзакцию"
   WORD nTrans = m_rTransacts.GetNewTransactOrd();   //номер новой транзакции
-  WORD iUserFrom = m_rUsers.OwnerIndex();           //индекс владельца узла
   TCHAR szMessBuf[ERMES_BUFSIZE];
   CreateTransactSubcommand(szMessBuf, _T("TAQ"),
                            nTrans, iUserFrom, iUserTo, rAmount);
@@ -265,37 +262,6 @@ void  CBlockChain::CreateTRAMessage()
   m_mbTRA.PutMessage(szMess);   //занести в буфер
 } // CBlockChain::CreateTRAMessage()
 
-/* Провести транзакцию (находится в "своей" строке таблицы голосования)
-void  CBlockChain::ExecuteTransaction()
-{
-  / * Сформировать сообщение TRA
-  TCHAR szMess[CHARBUFSIZE];
-  WORD iNode     = m_paNode->m_iOwnNode,            //владелец узла
-       nTrans    = m_nActTrans, //m_tVoteRes[iNode]._nTrans номер транзакции
-       iUserFrom = m_tVoteRes[iNode]._iUserFrom,    //пользователь "кто"
-       iUserTo   = m_tVoteRes[iNode]._iUserTo,      //пользователь "кому"
-       iNodeTo;
-  double rAmount = m_tVoteRes[iNode]._rSum;         //сумма транзакции
-  CreateTransactSubcommand(szMess, _T("TRA"),
-                           nTrans, iUserFrom, iUserTo, rAmount); * /
-  bool b;  WORD iNodeTo;
-  TMessageBuf mbTRA(m_mbTRA.Message());
-  // Разослать сообщение TRA на удалённые узлы сети
-  for (b = m_paNode->GetFirstNode(iNodeTo);
-       b; b = m_paNode->GetNextNode(iNodeTo)) {
-    mbTRA.PutMessage(m_mbTRA.Message());    //занести в буфер
-    RequestNoReply(iNodeTo, mbTRA);     //портит mbTRA!
-  }
-  if (m_rTransacts.GetNewTransactOrd() == m_nActTrans) {
-    // Регистр транзакций актуален - провести транзакцию на своём узле
-    m_pMainWin->ApproveTransaction();   //отобразить одобрение транзакции
-    mbTRA.PutMessage(m_mbTRA.Message());    //занести в буфер
-    b = ExecuteTransactionOnLocalNode(mbTRA);
-  }
-/ *  else
-    m_mbTRA = mbTRA;    //сохранить сообщение TRA
-} // CBlockChain::ExecuteTransaction() */
-
 // Провести транзакцию на своём узле
 bool  CBlockChain::ExecuteTransactionOnLocalNode(TMessageBuf &mbTRA)
 //iUserFrom - индекс пользователя-отправителя
@@ -307,23 +273,14 @@ bool  CBlockChain::ExecuteTransactionOnLocalNode(TMessageBuf &mbTRA)
   // Извлечь параметры транзакции
   WORD nTrans = tCmd.GetTransNo(),
 #ifdef DBGHASHSIZE
-  iUserFrom = CPeerNetNode::ToNumber((LPTSTR)tCmd._chHashFrom, SHORTNUMSIZ),
-  iUserTo = CPeerNetNode::ToNumber((LPTSTR)tCmd._chHashTo, SHORTNUMSIZ);
+       iUserFrom =
+         CPeerNetNode::ToNumber((LPTSTR)tCmd._chHashFrom, SHORTNUMSIZ),
+       iUserTo = CPeerNetNode::ToNumber((LPTSTR)tCmd._chHashTo, SHORTNUMSIZ);
 #else
-  iUserFrom = m_rUsers.GetUserByLoginHash(tCmd._chHashFrom),
-  iUserTo = m_rUsers.GetUserByLoginHash(tCmd._chHashTo);
+       iUserFrom = m_rUsers.GetUserByLoginHash(tCmd._chHashFrom),
+       iUserTo = m_rUsers.GetUserByLoginHash(tCmd._chHashTo);
 #endif
   double rAmount = tCmd.GetAmount();
-/*  if (m_bTrans) {
-    VERIFY(nTrans == m_rTransacts.GetNewTransactOrd());
-    // Найти в таблице голосования сумму запрошенной транзакции
-    for (WORD i = 0; i < m_nVote; i++)
-      if (m_tVoteRes[i]._iUser == m_tVoteRes[i]._iUserFrom) {
-        rAmount = m_tVoteRes[i]._rSum;  break;
-      }
-    VERIFY(rAmount == rAmount0);
-    m_bTrans = false; //если проводилась собственная транзакция, сбросить флаг
-  } */
   // Сформировать блок транзакции
   TTransact *ptRansact =
     m_rTransacts.CreateTransactBlock(iUserFrom, iUserTo, rAmount);
@@ -344,7 +301,7 @@ void  CBlockChain::CloseRegisters()
 
 //private:
 // Внутренние методы
-// -------------------------------------------------------------------
+// ---------------------------------------------------------------------
 // Сформировать подкоманду запроса, ответа или исполнения транзакции
 void  CBlockChain::CreateTransactSubcommand(
   LPTSTR pszMsg, LPTSTR pszSbcmd, WORD nTrans,
@@ -471,16 +428,8 @@ bool  CBlockChain::AddInVotingTable(WORD iNodeFrom, TMessageBuf *pmbTAR)
   m_tVoteRes[iNodeFrom]._nTrans = tCmd.GetTransNo();
   m_tVoteRes[iNodeFrom]._iUserFrom =
     m_rUsers.GetUserByName((LPTSTR)tCmd._chHashFrom, 0);
-/* #ifdef DBGHASHSIZE
-#else
-    m_rUsers.GetUserByLoginHash(tCmd._chHashFrom),
-#endif */
   m_tVoteRes[iNodeFrom]._iUserTo =
     m_rUsers.GetUserByName((LPTSTR)tCmd._chHashTo, 0);
-/* #ifdef DBGHASHSIZE
-#else
-    m_rUsers.GetUserByLoginHash(tCmd._chHashTo),
-#endif */
   m_tVoteRes[iNodeFrom]._rSum = tCmd.GetAmount();
   CString sNode, sTrans, sAmount;
   TCHAR szOwner[NAMESBUFSIZ], szUserFrom[NAMESBUFSIZ],
@@ -553,8 +502,8 @@ bool  CBlockChain::GetTransactionBlock(WORD nBlock, TMessageBuf &mbGTBL)
        nLeng = HASHPREVOFF*sizeof(TCHAR)+HASHSIZE*2;
   CreateTransactSubcommand(szMess, _T("TBL"), nBlock,
                            iUserFrom, iUserTo, ptRansact->GetAmount());
-  m_rTransacts.HashToSymbols((char *)(szMess+HASHPREVOFF),
-                             ptRansact->_chPrevHash);
+  CTransRegister::HashToSymbols((char *)(szMess+HASHPREVOFF),
+                                ptRansact->_chPrevHash);
   mbGTBL.Put((BYTE *)szMess, nLeng);
   return true;
 } // CBlockChain::GetTransactionBlock()
@@ -589,13 +538,6 @@ bool  CBlockChain::AddTransactionBlock(TMessageBuf &mbTBL)
        iUserFrom = m_rUsers.GetUserByName((LPTSTR)tCmd._chHashFrom, 0),
        iUserTo = m_rUsers.GetUserByName((LPTSTR)tCmd._chHashTo, 0);
   double rAmount = tCmd.GetAmount();
-/*
-  char  _szTrnsOrd[NAMESBUFSIZ];    //0x0000 порядковый номер транзакции
-  BYTE  _chHashSrc[HASHSIZE];       //0x0010 хеш-код рег имени "кто"
-  BYTE  _chHashDst[HASHSIZE];       //0x0090 хеш-код рег имени "кому"
-  char  _szAmount[NAMESBUFSIZ];     //0x0110 сумма транзакции "сколько"
-  BYTE  _chPrevHash[HASHSIZE];      //0x0120 хеш-код предыдущего блока
-*/
   TTransact tRansact;  TUser *ptUser;
   b = (nTrans == m_rTransacts.GetNewTransactOrd());
   if (b) {
@@ -604,21 +546,15 @@ bool  CBlockChain::AddTransactionBlock(TMessageBuf &mbTBL)
     tRansact.SetHashSource(ptUser->_chLogHash, HASHSIZE);
     ptUser = m_rUsers.GetAt(iUserTo);
     tRansact.SetHashDestination(ptUser->_chLogHash, HASHSIZE);
-    m_rTransacts.SymbolsToHash((char *)(tCmd._chHashPrev),
-                               tRansact._chPrevHash);
+    // Вставить хеш-код последней транзакции
+    CTransRegister::SymbolsToHash((char *)(tCmd._chHashPrev),
+                                  tRansact._chPrevHash);
     tRansact.SetAmount(rAmount);
     m_rTransacts.Add(&tRansact);    //добавить в регистр транзакций
-/*  if (m_bTrans) {
-      // Выполняется "своя" транзакция - скорректировать таблицу голосования
-      m_tVoteRes[m_paNode->m_iOwnNode]._nTrans = nTrans;
-      if (m_rTransacts.GetNewTransactOrd() == m_nActTrans) {
-        // Регистр транзакций полностью актуализирован - 
-        //одобрить и провести транзакцию
-        m_pMainWin->ApproveTransaction();   //отобразить одобрение транзакции
-        ExecuteTransaction();
-      }
-    } */
-    m_pMainWin->AddInTransactTable(&tRansact);    //отобразить
+    m_pMainWin->AddInTransactTable(&tRansact);  //отобразить
+    // Скорректировать балансы пользователей
+    CorrectBalance(iUserFrom, -rAmount);
+    CorrectBalance(iUserTo, rAmount);
   }
   else {
     // Ошибка - нарушение последовательности блоков хеш-чейн
