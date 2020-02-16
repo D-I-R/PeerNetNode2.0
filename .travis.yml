@@ -1,4 +1,4 @@
-os: linux
+os: windous
 dist: xenial
 sudo: true
 compiler: gcc
