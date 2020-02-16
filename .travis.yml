@@ -10,8 +10,7 @@ addons:
     - g++-multilib
     - nasm
     sources:
-    - llvm-toolchain-precise-3.7
-    - ubuntu-toolchain-r-test
+    - docker
 language: cpp
 sudo: false
 compiler:
